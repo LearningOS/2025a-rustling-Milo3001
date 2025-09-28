@@ -6,7 +6,7 @@
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
+// use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -69,14 +69,38 @@ impl<T> LinkedList<T> {
             },
         }
     }
+}
+impl<T: std::cmp::PartialOrd + Clone> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+		let mut list_c = LinkedList::<T>::new();
+        let mut node_a = list_a.start;
+        let mut node_b = list_b.start;
+        loop {
+            match (node_a, node_b) {
+                (None, None) => break,
+                (Some(a_ptr), None) => {
+                    list_c.add(unsafe { (*a_ptr.as_ptr()).val.clone()});
+                    node_a = unsafe { (*a_ptr.as_ptr()).next };
+                },
+                (None, Some(b_ptr)) => {
+                    list_c.add(unsafe { (*b_ptr.as_ptr()).val.clone()});
+                    node_b = unsafe { (*b_ptr.as_ptr()).next };
+                },
+                (Some(a_ptr), Some(b_ptr)) => {
+                    let a_val = unsafe { &(*a_ptr.as_ptr()).val };
+                    let b_val = unsafe { &(*b_ptr.as_ptr()).val };
+                    if *a_val <= *b_val {
+                        list_c.add((*a_val).clone());
+                        node_a = unsafe { (*a_ptr.as_ptr()).next };
+                    } else {
+                        list_c.add((*b_val).clone());
+                        node_b = unsafe { (*b_ptr.as_ptr()).next };
+                    }
+                }
+            }
         }
+        list_c
 	}
 }
 
